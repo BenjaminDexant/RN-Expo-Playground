@@ -25,15 +25,31 @@ const MapScreen = ({ navigation }: RootTabScreenProps<'Todo'>) => {
     longitudeDelta: 0.01,
 });
 
+const handleLongPress = (e: any) => {
+  const { coordinate } = e.nativeEvent;
+  setMarkers(markers => [
+    ...markers,
+    {
+      coordinate,
+      key: String(Math.random()),
+      title: 'New marker',
+      description: 'Description',
+    }
+  ]);
+};
+
 const handleDragEnd = (e: any, key: string) => {
-  const { latitude, longitude } = e.nativeEvent.coordinate;
+  const { coordinate } = e.nativeEvent;
+
+  const markerCopy = { ...markers.find(marker => marker.key === key) };
+
   setMarkers(markers.filter(
     marker => marker.key !== key
     ).concat(
       {
-        coordinate: { latitude, longitude },
-        title: 'NewMarker',
-        description: 'NewDescription',
+        coordinate,
+        title: markerCopy.title,
+        description: markerCopy.description,
         key
       }
     )
@@ -52,6 +68,7 @@ const handleDragEnd = (e: any, key: string) => {
           longitudeDelta: 0.01,
         }}
         onRegionChangeComplete={(region) => setRegion(region)}
+        onLongPress={(e) => {handleLongPress(e)}}
       >
         {markers.map((marker) => (
           <Marker
