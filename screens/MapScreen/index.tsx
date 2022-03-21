@@ -1,56 +1,62 @@
 import React, { useState, useRef } from 'react';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { LatLng, MapEvent, Marker } from 'react-native-maps';
 import { StyleSheet, View, Dimensions, Text } from 'react-native';
 import { RootTabScreenProps } from '../../types';
+
+interface IMarker {
+  id: string;
+  coordinate: LatLng;
+  title: string;
+  description: string;
+}
+
+interface IRegion {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+}
 
 const { height, width } = Dimensions.get('window');
 
 const MapScreen = ({ navigation }: RootTabScreenProps<'Todo'>) => {
   const mapRef = useRef(null);
 
-  const [markers, setMarkers]= useState([{
-    coordinate: {
-      latitude: 43.604429,
-      longitude: 1.443348,
-    },
-    title: 'Toulouse',
-    description: 'Toulouse',
-    key: '1',
-  }]);
+  const [markers, setMarkers]= useState<IMarker[]>([]);
 
-  const [region, setRegion] = useState({
+  const [region, setRegion] = useState<IRegion>({
     latitude: 43.604429,
     longitude: 1.443348,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
 });
 
-const handleLongPress = (e: any) => {
+const handleLongPress = (e: MapEvent) => {
   const { coordinate } = e.nativeEvent;
   setMarkers(markers => [
     ...markers,
     {
       coordinate,
-      key: String(Math.random()),
+      id: String(Math.random()),
       title: 'New marker',
       description: 'Description',
     }
   ]);
 };
 
-const handleDragEnd = (e: any, key: string) => {
+const handleDragEnd = (e: MapEvent, id: string) => {
   const { coordinate } = e.nativeEvent;
 
-  const markerCopy = { ...markers.find(marker => marker.key === key) };
+  const markerCopy = { ...markers.find(marker => marker.id === id) };
 
   setMarkers(markers.filter(
-    marker => marker.key !== key
+    marker => marker.id !== id
     ).concat(
       {
         coordinate,
         title: markerCopy.title,
         description: markerCopy.description,
-        key
+        id
       }
     )
   );
@@ -73,11 +79,11 @@ const handleDragEnd = (e: any, key: string) => {
         {markers.map((marker) => (
           <Marker
             draggable
-            key={marker.key}
+            key={marker.id}
             coordinate={marker.coordinate}
             title={marker.title}
             description={marker.description}
-            onDragEnd={(e) => {handleDragEnd(e, marker.key)}}
+            onDragEnd={(e) => {handleDragEnd(e, marker.id)}}
           />
         ))}
         </MapView>
