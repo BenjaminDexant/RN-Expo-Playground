@@ -7,6 +7,7 @@ const { height, width } = Dimensions.get('window');
 
 const MapScreen = ({ navigation }: RootTabScreenProps<'Todo'>) => {
   const mapRef = useRef(null);
+
   const [markers, setMarkers]= useState([{
     coordinate: {
       latitude: 43.604429,
@@ -14,13 +15,31 @@ const MapScreen = ({ navigation }: RootTabScreenProps<'Todo'>) => {
     },
     title: 'Toulouse',
     description: 'Toulouse',
+    key: '1',
   }]);
+
   const [region, setRegion] = useState({
     latitude: 43.604429,
     longitude: 1.443348,
     latitudeDelta: 0.01,
     longitudeDelta: 0.01,
 });
+
+const handleDragEnd = (e: any, key: string) => {
+  const { latitude, longitude } = e.nativeEvent.coordinate;
+  setMarkers(markers.filter(
+    marker => marker.key !== key
+    ).concat(
+      {
+        coordinate: { latitude, longitude },
+        title: 'NewMarker',
+        description: 'NewDescription',
+        key
+      }
+    )
+  );
+}
+
   return (
     <View style={styles.container}>
       <MapView
@@ -34,12 +53,14 @@ const MapScreen = ({ navigation }: RootTabScreenProps<'Todo'>) => {
         }}
         onRegionChangeComplete={(region) => setRegion(region)}
       >
-        {markers.map((marker, index) => (
+        {markers.map((marker) => (
           <Marker
-            key={index}
+            draggable
+            key={marker.key}
             coordinate={marker.coordinate}
             title={marker.title}
             description={marker.description}
+            onDragEnd={(e) => {handleDragEnd(e, marker.key)}}
           />
         ))}
         </MapView>
